@@ -7,9 +7,9 @@ import dts from "vite-plugin-dts";
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, "src/injecd.ts"),
+      entry: resolve(__dirname, "src/index.ts"),
       name: "injecd",
-      fileName: "injecd",
+      fileName: "index",
     },
   },
   plugins: [dts()],

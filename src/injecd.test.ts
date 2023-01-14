@@ -1,8 +1,8 @@
-import { spawnContainer, injecd, injecdReturn } from "./injecd";
+import { injecd, injecdReturn, spawnContainer } from ".";
 import { it, expect, describe, beforeEach } from "vitest";
 
 it.fails(".r throws outside container", () => injecd<string>().r);
-it.fails(".option throws outside container", () => injecd<string>().option);
+it.fails(".option throws outside container", () => injecd<string>().optional);
 it.fails(".or() throws outside container", () => injecd<string>().or("test"));
 
 it("basic resolve", () => {
@@ -16,7 +16,7 @@ it("basic resolve", () => {
 });
 
 describe("nested resolve", () => {
-  type factoryType = () => string
+  type factoryType = () => string;
   const parentT = injecd<factoryType>();
   const nestedT = injecdReturn<factoryType>();
   let container: ReturnType<typeof spawnContainer>;
@@ -45,12 +45,20 @@ describe("nested resolve", () => {
   });
 
   it(".option without injection gives default value", () => {
-    container.registerFactory(parentT, (a = nestedT.option) => {
+    container.registerFactory(parentT, (a = nestedT.optional) => {
       return () => a;
     });
 
     const factory = container.resolve(parentT);
 
     expect(factory()).toBeUndefined();
+  });
+
+  it.fails(".r without injection throws", () => {
+    container.registerFactory(parentT, (a = nestedT.required) => {
+      return () => a;
+    });
+
+    container.resolve(parentT);
   });
 });
