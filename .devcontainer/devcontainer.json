@@ -1,0 +1,13 @@
+{
+  "dockerFile": "Dockerfile",
+  "postCreateCommand": "npm i",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "jerrygoyal.shortcut-menu-bar"
+      ]
+    }
+  }
+}
