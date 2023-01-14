@@ -1,5 +1,6 @@
-let idCounter = 1;
+let numberOfContainers = 0;
 let currentContainerId: number | null = null;
+export const getNumberOfContainers = () => numberOfContainers;
 const error = <T>(message: string): T => {
   throw message;
 };
@@ -19,7 +20,7 @@ class Container {
     return currentContainerId || error("Some container must be initialized");
   }
   constructor() {
-    this.id = idCounter++;
+    this.id = ++numberOfContainers;
   }
   public registerInstance<T>(resolver: Injectable<T>, instance: T) {
     this.scope(() => resolver.internals.registerInstance(instance));

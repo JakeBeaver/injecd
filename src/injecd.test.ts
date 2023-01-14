@@ -1,11 +1,9 @@
 import { spawnContainer, injecd, injecdByReturn } from "./injecd";
-import { it, expect } from "vitest";
+import { it, expect, describe, beforeEach } from "vitest";
 
 it.fails(".r throws outside container", () => injecd<string>().r);
 it.fails(".option throws outside container", () => injecd<string>().option);
-it.fails(".or() throws outside container", () =>
-  injecd<string>().or("test")
-);
+it.fails(".or() throws outside container", () => injecd<string>().or("test"));
 
 it("basic resolve", () => {
   const stringT = injecd<string>();
@@ -17,43 +15,42 @@ it("basic resolve", () => {
   expect(resolved).toBe("testing");
 });
 
-it("nested resolve", () => {
-  const nestedStringT = injecd<string>();
-  const parentFuncT = injecdByReturn(parentFuncFactory);
-  function parentFuncFactory(a: string = nestedStringT.r): () => string {
-    return () => a;
-  }
-  const container = spawnContainer();
-  container.registerInstance(nestedStringT, "a");
-  container.registerFactory(parentFuncT, parentFuncFactory);
+describe("nested resolve", () => {
+  type factoryType = () => string
+  const parentT = injecd<factoryType>();
+  const nestedT = injecdByReturn<factoryType>();
+  let container: ReturnType<typeof spawnContainer>;
+  beforeEach(() => {
+    container = spawnContainer();
+  });
+  it("nested resolve", () => {
+    container.registerInstance(nestedT, "a");
+    container.registerFactory(parentT, (a = nestedT.r) => {
+      return () => a;
+    });
 
-  const resolvedFunc = container.resolve(parentFuncT);
-  expect(resolvedFunc()).toBe("a");
-});
+    const factory = container.resolve(parentT);
 
-it(".or() without injection gives default value", () => {
-  const nestedStringT = injecd<string>();
-  const parentFuncT = injecdByReturn(parentFuncFactory);
-  function parentFuncFactory(a: string = nestedStringT.or("default value")): () => string {
-    return () => a;
-  }
-  const container = spawnContainer();
-  container.registerFactory(parentFuncT, parentFuncFactory);
+    expect(factory()).toBe("a");
+  });
 
-  const resolvedFunc = container.resolve(parentFuncT);
-  expect(resolvedFunc()).toBe("default value");
-});
+  it(".or() without injection gives default value", () => {
+    container.registerFactory(parentT, (a = nestedT.or("b")) => {
+      return () => a;
+    });
 
-it(".option without injection gives default value", () => {
-  const nestedStringT = injecd<string>();
-  const parentFuncT = injecdByReturn(parentFuncFactory);
-  function parentFuncFactory(a = nestedStringT.option): () => string | undefined {
-    return () => a;
-  }
-  
-  const container = spawnContainer();
-  container.registerFactory(parentFuncT, parentFuncFactory);
+    const factory = container.resolve(parentT);
 
-  const resolvedFunc = container.resolve(parentFuncT);
-  expect(resolvedFunc()).toBeUndefined();
+    expect(factory()).toBe("b");
+  });
+
+  it(".option without injection gives default value", () => {
+    container.registerFactory(parentT, (a = nestedT.option) => {
+      return () => a;
+    });
+
+    const factory = container.resolve(parentT);
+
+    expect(factory()).toBeUndefined();
+  });
 });
