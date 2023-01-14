@@ -76,8 +76,11 @@ class InjectableInternals<T> {
 }
 
 export const spawnContainer = () => new Container();
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const injecd = <T>(dummy?: T) => new Injectable<T>();
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const injecdByReturn = <T extends () => unknown>(dummyFactory?: T) =>
-  new Injectable<ReturnType<T>>();
+export const injecd = <T>(dummy?: T) => {
+  dummy; // ignored variable
+  return new Injectable<T>();
+};
+export const injecdReturn = <T extends () => unknown>(dummyFactory?: T) => {
+  dummyFactory; // ignored variable
+  return new Injectable<ReturnType<T>>();
+};

@@ -1,4 +1,4 @@
-import { spawnContainer, injecd, injecdByReturn } from "./injecd";
+import { spawnContainer, injecd, injecdReturn } from "./injecd";
 import { it, expect, describe, beforeEach } from "vitest";
 
 it.fails(".r throws outside container", () => injecd<string>().r);
@@ -18,7 +18,7 @@ it("basic resolve", () => {
 describe("nested resolve", () => {
   type factoryType = () => string
   const parentT = injecd<factoryType>();
-  const nestedT = injecdByReturn<factoryType>();
+  const nestedT = injecdReturn<factoryType>();
   let container: ReturnType<typeof spawnContainer>;
   beforeEach(() => {
     container = spawnContainer();
