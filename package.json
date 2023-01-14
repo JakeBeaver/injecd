@@ -40,10 +40,12 @@
   "scripts": {
     "build": "tsc && vite build",
     "test": "vitest",
+    "test:once": "vitest run",
     "lint": "prettier --write . && eslint",
     "format": "prettier --write .",
     "pack": "tsc && vite build && npm pack",
-    "testpack": "vite build && npm pack && npm i ./injecd-*.tgz && vitest run && rm ./injecd-*.tgz && npm r injecd"
+    "testpack": "vite build && npm pack && npm i ./injecd-*.tgz && vitest run && rm ./injecd-*.tgz && npm r injecd",
+    "pipeline": "npm run lint && npm run test:once && npm run build"
   },
   "devDependencies": {
     "@types/node": "^18.11.18",
