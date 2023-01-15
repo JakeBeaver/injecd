@@ -27,12 +27,28 @@ class InjecdContainer {
   }
 
   /**
-   * Registers a class type as factory
+   * Registers a class type as factory, new instance every resolution
    * @param tag Injecd tag created with `injecd()`
    * @param constructor Class which will be instantiated on each resolution
    */
   public registerClass<T>(tag: InjecdTag<T>, constructor: new () => T) {
     this.registerFactory(tag, () => new constructor());
+  }
+
+  /**
+   * Registers a class type as factory, singleton mode
+   * @param tag Injecd tag created with `injecd()`
+   * @param constructor Class which will be instantiated once and retained for all resolutions
+   */
+  public registerClassSingleton<T>(
+    tag: InjecdTag<T>,
+    constructor: new () => T
+  ) {
+    let i: T | undefined;
+    this.registerFactory(tag, () => {
+      if (!i) i = new constructor();
+      return i;
+    });
   }
 
   /**

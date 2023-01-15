@@ -101,6 +101,36 @@ describe("nested resolve", () => {
 
     expect(resolved.childId).toBe(1);
   });
+  it("resolve different instance", () => {
+    class A {}
+    const tag = injecd<A>();
+    container.registerClass(tag, A);
+    const r = () => container.resolve(tag);
+
+    expect(r()).not.toBe(r());
+  });
+  it("resolve the same singleton", () => {
+    class A {}
+    const tag = injecd<A>();
+    container.registerClassSingleton(tag, A);
+    const r = () => container.resolve(tag);
+
+    expect(r()).toBe(r());
+  });
+  it("singleton instantiates lazy on resolve", () => {
+    const num = injecd<number>();
+    const tag = injecd<A>();
+    class A {
+      constructor(public n = num.r) {}
+    }
+
+    container.registerClassSingleton(tag, A);
+    container.registerInstance(num, 1);
+
+    const resolved = container.resolve(tag);
+
+    expect(resolved.n).toBe(1);
+  });
 });
 
 it("multiple containers", () => {
