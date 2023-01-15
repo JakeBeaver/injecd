@@ -1,6 +1,6 @@
 {
   "name": "injecd",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
@@ -20,7 +20,7 @@
   "files": [
     "dist"
   ],
-  "description": "JS/TS injection that minimizes boilerplate by leveraging default parameters",
+  "description": "Dependency Injection, superlight with minimum boilerplate",
   "author": "Jakub Kolezynski",
   "license": "MIT",
   "homepage": "https://kolezyn.ski/",
