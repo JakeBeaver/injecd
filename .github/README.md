@@ -29,7 +29,7 @@ const class$ = injecd<A>();
 
 ```
 class A {
-    constructor(public greeting = greeting$.r) {}
+    constructor(public getGreeting = greetingFactory$.r) {}
 }
 ```
 
@@ -43,7 +43,7 @@ const container = spawnContainer();
 
 ```
 container.registerInstance(greeting$, "Hello World!");
-container.registerFactory(class$, () => new A());
+container.registerClass(class$, A);
 ```
 
 ### 5. Resolve!
@@ -161,8 +161,8 @@ import { SomeClass$, SomeClass } from './SomeClass';
 const container = spawnContainer();
 container.registerInstance(SomeService$, singletonService);
 
-// register factory for SomeClass and resolve it later
-container.registerFactory(SomeClass$, () => new SomeClass());
+// register SomeClass and resolve it later
+container.registerClass(SomeClass$, SomeClass);
 container.resolve(SomeClass$);
 
 // or resolve directly without registering
@@ -174,19 +174,23 @@ container.resolveFactory(() => new SomeClass());
 ### alternatively the tag can be part of the class, like so:
 
 ```
-class Child {
-    static tag = injecd<Child>();
-    constructor(public id: number) {}
-}
-container.registerInstance(Child.tag, new Child(1));
-
-class Parent {
-    childId: number;
-    constructor(child = Child.tag.r) {
-    this.childId = child.id;
+    class Child {
+      static tag = injecd<Child>();
+      constructor(public id: number) {}
     }
-}
-const resolvedB = container.resolveFactory(() => new Parent());
 
-expect(resolvedB.childId).toBe(1);
+    class Parent {
+      static tag = injecd<Parent>();
+      childId: number;
+      constructor(child = Child.tag.r) {
+        this.childId = child.id;
+      }
+    }
+
+    container.registerInstance(Child.tag, new Child(1));
+    container.registerClass(Parent.tag, Parent);
+
+    const resolved = container.resolve(Parent.tag);
+
+    expect(resolved.childId).toBe(1);
 ```

@@ -7,7 +7,7 @@ const getContainer = (): number =>
   currentContainerId ||
   error("injecd container action outside of container scope");
 
-class Container {
+class InjecdContainer {
   private id: number;
   private scope<T>(action: () => T) {
     currentContainerId = this.id;
@@ -23,21 +23,30 @@ class Container {
   }
 
   /**
-   * Registers specific instance
-   * @param tag Injecd tag created with `injecd()`
-   * @param instance Instance that will be resolved for this tag
-   */
-  public registerInstance<T>(tag: InjecdTag<T>, instance: T) {
-    this.scope(() => tag.internals.registerInstance(instance));
-  }
-
-  /**
    * Registers a factory function
    * @param tag Injecd tag created with `injecd()`
    * @param factory Function which will create an instance when resolving
    */
   public registerFactory<T>(tag: InjecdTag<T>, factory: () => T) {
-    this.scope(() => tag.internals.registerFactory(factory));
+    this.scope(() => tag.internals.register(factory));
+  }
+
+  /**
+   * Registers specific instance
+   * @param tag Injecd tag created with `injecd()`
+   * @param instance Instance that will be resolved for this tag
+   */
+  public registerInstance<T>(tag: InjecdTag<T>, instance: T) {
+    this.registerFactory(tag, () => instance);
+  }
+
+  /**
+   * Registers a class type as factory
+   * @param tag Injecd tag created with `injecd()`
+   * @param constructor Class which will be instantiated on each resolution
+   */
+  public registerClass<T>(tag: InjecdTag<T>, constructor: new () => T) {
+    this.registerFactory(tag, () => new constructor());
   }
 
   /**
@@ -115,26 +124,18 @@ class InjecdTag<T> {
 }
 
 class Internals<T> {
-  private containers = new Map<number, () => T>();
-  private getFactory(): (() => T) | undefined {
-    return this.containers.get(getContainer());
-  }
-  private setFactory(get: () => T) {
-    this.containers.set(getContainer(), get);
-  }
-  registerFactory(get: () => T) {
-    this.setFactory(get);
-  }
-  registerInstance(instance: T) {
-    this.setFactory(() => instance);
-  }
-  resolveHard(): T {
-    const get = this.getFactory();
-    return get?.() || error("tried to resolve an unregistered injectable");
+  private getters = new Map<number, () => T>();
+  register(get: () => T) {
+    this.getters.set(getContainer(), get);
   }
   resolveSoft(): T | undefined {
-    const get = this.getFactory();
+    const get = this.getters.get(getContainer());
     return get?.();
+  }
+  resolveHard(): T {
+    return (
+      this.resolveSoft() || error("tried to resolve an unregistered injectable")
+    );
   }
 }
 
@@ -147,7 +148,7 @@ export const getNumberOfContainers = () => numberOfContainers;
  *  Create a new IoC container
  *  @returns new IoC container
  */
-export const spawnContainer = () => new Container();
+export const spawnContainer = () => new InjecdContainer();
 
 /**
  * Create a new injecd tag for a container to register and resolve entitity or factory.\

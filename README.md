@@ -43,7 +43,7 @@ const container = spawnContainer();
 
 ```
 container.registerInstance(greeting$, "Hello World!");
-container.registerFactory(class$, () => new A());
+container.registerClass(class$, A);
 ```
 
 ### 5. Resolve!
