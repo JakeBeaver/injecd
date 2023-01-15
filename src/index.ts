@@ -54,11 +54,13 @@ class InjecdContainer {
   }
 
   private scope<T>(action: () => T) {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    currentContainer = this;
-    const output = action();
-    currentContainer = null;
-    return output;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      currentContainer = this;
+      return action();
+    } finally {
+      currentContainer = null;
+    }
   }
 }
 
