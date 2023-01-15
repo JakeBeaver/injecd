@@ -9,15 +9,7 @@ const getContainer = (): number =>
 
 class InjecdContainer {
   private id: number;
-  private scope<T>(action: () => T) {
-    currentContainerId = this.id;
-    const output = action();
-    currentContainerId = null;
-    return output;
-  }
-  public static get current() {
-    return currentContainerId || error("Some container must be initialized");
-  }
+
   constructor() {
     this.id = ++numberOfContainers;
   }
@@ -65,6 +57,13 @@ class InjecdContainer {
    */
   public resolveFactory<T>(factory: () => T) {
     return this.scope(() => factory());
+  }
+
+  private scope<T>(action: () => T) {
+    currentContainerId = this.id;
+    const output = action();
+    currentContainerId = null;
+    return output;
   }
 }
 
