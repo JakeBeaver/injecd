@@ -61,4 +61,22 @@ describe("nested resolve", () => {
 
     container.resolve(parentT);
   });
+
+  it("class type works", () => {
+    class Child {
+      static tag = injecd<Child>();
+      constructor(public id: number) {}
+    }
+    container.registerInstance(Child.tag, new Child(1));
+
+    class Parent {
+      childId: number;
+      constructor(child = Child.tag.r) {
+        this.childId = child.id;
+      }
+    }
+    const resolvedB = container.resolveFactory(() => new Parent());
+
+    expect(resolvedB.childId).toBe(1);
+  });
 });
