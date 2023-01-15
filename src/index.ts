@@ -66,11 +66,6 @@ class InjecdContainer {
 
 class InjecdTag<T> {
   /**
-   * NO TOUCHY! >:-[
-   */
-  public internals = new Internals<T>();
-
-  /**
    * Resolution point for this injecd tag.\
    * Throws error if no entity registered for this tag in the container
    * @property r
@@ -117,6 +112,11 @@ class InjecdTag<T> {
   or(defaultValue: T): T {
     return this.internals.resolveSoft() || defaultValue;
   }
+
+  /**
+   * NO TOUCHY! >:-[
+   */
+  internals = new Internals<T>();
 }
 
 class Internals<T> {
