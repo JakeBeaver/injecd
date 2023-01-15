@@ -5,49 +5,57 @@ Dependency Injection made simple.
 By leveraging default parameters, injecd minimizes the usual boilerplate present in TypeScript injection, while retaining rich static analysis around types.
 
 ## installation
+
 ```
 npm install injecd
 ```
 
 ## importing
+
 ```
 import { injecd, spawnContainer } from "injecd";
 ```
 
 # Usage
 
-
 ### 1. Tag
+
 ```
 const greeting$ = injecd<string>();
 const class$ = injecd<A>();
 ```
+
 ### 2. Mark
+
 ```
 class A {
     greeting: string;
     constructor(greeting = greeting$.r) {}
 }
 ```
+
 ### 3. Spawn
+
 ```
 const container = spawnContainer();
 ```
+
 ### 4. Register
+
 ```
 container.registerInstance(greeting$, "Hello World!");
 container.registerFactory(class$, () => new A()));
 ```
+
 ### 5. Resolve!
+
 ```
 const instance = container.resolve(classTag);
 
 console.log(instance.greeting); // > Hello World!
 ```
 
-
 ## Tagging with type inferrence shorthands
-
 
 Instead of `injecd<typeof weird>()`:
 
@@ -55,7 +63,9 @@ Instead of `injecd<typeof weird>()`:
 const weird = { weird: "untyped", inferred: "object" };
 const weirdTag = injecd(weirdType):
 ```
+
 Insteand of `injecd<ReturnType<typeof<otherWeirdFactory>>()`
+
 ```
 function otherWeirdFactory(){
     return { other: "untyped", inferred: "object" };
@@ -63,10 +73,12 @@ function otherWeirdFactory(){
 const otherWeirdTag = injecdReturn(otherWeirdFactory);
 ```
 
-
 # In-depth usage examples
+
 ### functions
+
 Let's say you want to be able to mock randomness in your function for coin throw bets
+
 ```
 // random.ts
 export function getRealRandom() {
@@ -76,6 +88,7 @@ export function getRealRandom() {
 // getRealRandom passed as parameter for TS type inferring
 const rng$ = injecd(getRealRandom);
 ```
+
 ```
 // bets.ts
 function checkGuessFactory(getRandom = rng$.r){
@@ -84,6 +97,7 @@ function checkGuessFactory(getRandom = rng$.r){
     }
 }
 ```
+
 ```
 // main.ts
 const container = spawnContainer();
@@ -91,6 +105,7 @@ container.registerInstance(rng$, getRealRandom)
 
 const checkGuess = containre.resolveFactory(checkGuessFactory)
 ```
+
 ```
 // main.test.ts
 const mockGetRandom = () => .1;
@@ -157,7 +172,6 @@ container.resolveFactory(() => new SomeClass());
 
 `SomeClass()` constructor has a default parameter SomeService, so it can be instantiated as parameterless but only within a container.
 
-
 ### alternatively the tag can be part of the class, like so:
 
 ```
@@ -175,5 +189,5 @@ class Parent {
 }
 const resolvedB = container.resolveFactory(() => new Parent());
 
-expect(resolvedB.childId).toBe(1); 
+expect(resolvedB.childId).toBe(1);
 ```
