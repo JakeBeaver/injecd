@@ -13,7 +13,7 @@ class InjecdContainer {
    * @param tag Injecd tag created with `injecd()`
    * @param factory Function which will create an instance when resolving
    */
-  public registerFactory<T>(tag: InjecdTag<T>, factory: () => T) {
+  registerFactory<T>(tag: InjecdTag<T>, factory: () => T) {
     this.scope(() => tag.internals.register(factory));
   }
 
@@ -22,7 +22,7 @@ class InjecdContainer {
    * @param tag Injecd tag created with `injecd()`
    * @param instance Instance that will be resolved for this tag
    */
-  public registerInstance<T>(tag: InjecdTag<T>, instance: T) {
+  registerInstance<T>(tag: InjecdTag<T>, instance: T) {
     this.registerFactory(tag, () => instance);
   }
 
@@ -31,7 +31,7 @@ class InjecdContainer {
    * @param tag Injecd tag created with `injecd()`
    * @param constructor Class which will be instantiated on each resolution
    */
-  public registerClass<T>(tag: InjecdTag<T>, constructor: new () => T) {
+  registerClass<T>(tag: InjecdTag<T>, constructor: new () => T) {
     this.registerFactory(tag, () => new constructor());
   }
 
@@ -40,10 +40,7 @@ class InjecdContainer {
    * @param tag Injecd tag created with `injecd()`
    * @param constructor Class which will be instantiated once and retained for all resolutions
    */
-  public registerClassSingleton<T>(
-    tag: InjecdTag<T>,
-    constructor: new () => T
-  ) {
+  registerClassSingleton<T>(tag: InjecdTag<T>, constructor: new () => T) {
     let i: T | undefined;
     this.registerFactory(tag, () => {
       if (!i) i = new constructor();
@@ -56,7 +53,7 @@ class InjecdContainer {
    * Includes all injecd tagged dependencies
    * @param tag Injecd tag created with `injecd()`
    */
-  public resolve<T>(tag: InjecdTag<T>) {
+  resolve<T>(tag: InjecdTag<T>) {
     return this.scope(() => tag.internals.resolveHard());
   }
 
@@ -65,7 +62,7 @@ class InjecdContainer {
    * Includes all injecd tagged dependencies of references injecd tags
    * @param injecd Injecd tag created with `injecd()`
    */
-  public resolveFactory<T>(factory: () => T) {
+  resolveFactory<T>(factory: () => T) {
     return this.scope(() => factory());
   }
 
