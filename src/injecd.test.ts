@@ -102,3 +102,18 @@ describe("nested resolve", () => {
     expect(resolved.childId).toBe(1);
   });
 });
+
+it("multiple containers", () => {
+  const tag = injecd<number>();
+  const container1 = spawnContainer();
+  const container2 = spawnContainer();
+  const container3 = spawnContainer();
+
+  container1.registerInstance(tag, 1);
+  container2.registerInstance(tag, 2);
+  container3.registerInstance(tag, 3);
+
+  expect(container1.resolve(tag)).toBe(1);
+  expect(container2.resolve(tag)).toBe(2);
+  expect(container3.resolve(tag)).toBe(3);
+});

@@ -1,19 +1,13 @@
-let numberOfContainers = 0;
-let currentContainerId: number | null = null;
 const error = <T>(message: string): T => {
   throw message;
 };
-const getContainer = (): number =>
-  currentContainerId ||
+
+let currentContainer: InjecdContainer | null = null;
+const getContainer = (): InjecdContainer =>
+  currentContainer ||
   error("injecd container action outside of container scope");
 
 class InjecdContainer {
-  private id: number;
-
-  constructor() {
-    this.id = ++numberOfContainers;
-  }
-
   /**
    * Registers a factory function
    * @param tag Injecd tag created with `injecd()`
@@ -60,9 +54,10 @@ class InjecdContainer {
   }
 
   private scope<T>(action: () => T) {
-    currentContainerId = this.id;
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    currentContainer = this;
     const output = action();
-    currentContainerId = null;
+    currentContainer = null;
     return output;
   }
 }
@@ -123,7 +118,7 @@ class InjecdTag<T> {
 }
 
 class Internals<T> {
-  private getters = new Map<number, () => T>();
+  private getters = new Map<InjecdContainer, () => T>();
   register(get: () => T) {
     this.getters.set(getContainer(), get);
   }
@@ -137,11 +132,6 @@ class Internals<T> {
     );
   }
 }
-
-/**
- * @returns number of containers in existance
- */
-export const getNumberOfContainers = () => numberOfContainers;
 
 /**
  *  Create a new IoC container
