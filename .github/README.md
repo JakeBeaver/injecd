@@ -31,7 +31,7 @@ const class$ = injecd<A>();
 
 ```
 class A {
-    constructor(public getGreeting = greetingFactory$.r) {}
+    constructor(public greeting = greeting$.r) {}
 }
 ```
 
