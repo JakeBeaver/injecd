@@ -4,6 +4,8 @@ Dependency Injection made simple.
 
 By leveraging default parameters, injecd minimizes the usual boilerplate present in TypeScript injection, while retaining type checking and automatic code complition!
 
+[See injecd on npm](https://www.npmjs.com/package/injecd)
+
 ## installation
 
 ```
