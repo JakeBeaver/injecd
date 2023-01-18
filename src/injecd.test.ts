@@ -125,6 +125,11 @@ describe("nested resolve", () => {
 
     expect(r()).not.toBe(r());
   });
+  it("locks", () => {
+    container.registerInstance(nestedT, "test");
+    const locked = container.lock();
+    expect(locked.resolve(nestedT)).toBe("test");
+  });
 });
 
 it("multiple containers", () => {

@@ -2,84 +2,57 @@ const error = <T>(message: string): T => {
   throw message;
 };
 
-let currentContainer: InjecdContainer | null = null;
-const getContainer = (): InjecdContainer =>
+let currentContainer: Container | null = null;
+const getContainer = (): Container =>
   currentContainer ||
   error("injecd container action outside of container scope");
 
-class InjecdContainer {
-  /**
-   * Registers a factory function
-   * @param tag Injecd tag created with `injecd()`
-   * @param factory Function which will create an instance when resolving
-   */
-  registerFactory<T>(tag: InjecdTag<T>, factory: () => T) {
-    this.scope(() => (tag as Tag<T>).internals.register(factory));
+class Container implements InjecdContainer {
+  registerFactory<T>(tag: InjecdTag<T>, factory: () => T): InjecdContainer {
+    this.scope(() => (tag as Tag<T>).register(factory));
+    return this;
   }
 
-  /**
-   * Registers a class type as factory, singleton mode
-   * @param tag Injecd tag created with `injecd()`
-   * @param factory Function which will create an instance  and retained for all resolutions
-   */
   registerFactorySingleton<T>(tag: InjecdTag<T>, factory: () => T) {
     let i: T | undefined;
-    this.registerFactory(tag, () => {
+    return this.registerFactory(tag, () => {
       if (!i) i = factory();
       return i;
     });
   }
 
-  /**
-   * Registers a class type as factory, new instance every resolution
-   * @param tag Injecd tag created with `injecd()`
-   * @param constructor Class which will be instantiated on each resolution
-   */
   registerClass<T>(tag: InjecdTag<T>, constructor: new () => T) {
-    this.registerFactory(tag, () => new constructor());
+    return this.registerFactory(tag, () => new constructor());
   }
 
-  /**
-   * Registers a class type as factory, singleton mode
-   * @param tag Injecd tag created with `injecd()`
-   * @param constructor Class which will be instantiated once and retained for all resolutions
-   */
   registerClassSingleton<T>(tag: InjecdTag<T>, constructor: new () => T) {
     let i: T | undefined;
-    this.registerFactory(tag, () => {
+    return this.registerFactory(tag, () => {
       if (!i) i = new constructor();
       return i;
     });
   }
 
-  /**
-   * Registers specific instance
-   * @param tag Injecd tag created with `injecd()`
-   * @param instance Instance that will be resolved for this tag
-   */
   registerInstance<T>(tag: InjecdTag<T>, instance: T) {
-    this.registerFactory(tag, () => instance);
+    return this.registerFactory(tag, () => instance);
   }
 
-  /**
-   * Resolves the entity registered for given injecd tag\
-   * Includes all injecd tagged dependencies
-   * @param tag Injecd tag created with `injecd()`
-   */
+  lock() {
+    return {
+      resolve: this.resolve.bind(this),
+      resolveFactory: this.resolveFactory.bind(this),
+    };
+  }
+
   resolve<T>(tag: InjecdTag<T>) {
-    return this.scope(() => (tag as Tag<T>).internals.resolveHard());
+    return this.scope(() => (tag as Tag<T>).r);
   }
 
-  /**
-   * Resolves the entity from a factory function containing injecd tags\
-   * Includes all injecd tagged dependencies of references injecd tags
-   * @param injecd Injecd tag created with `injecd()`
-   */
   resolveFactory<T>(factory: () => T) {
     return this.scope(() => factory());
   }
 
-  private scope<T>(action: () => T) {
+  scope<T>(action: () => T) {
     try {
       // eslint-disable-next-line @typescript-eslint/no-this-alias
       currentContainer = this;
@@ -90,6 +63,84 @@ class InjecdContainer {
   }
 }
 
+class Tag<T> implements InjecdTag<T> {
+  private getters = new Map<Container, () => T>();
+  get r() {
+    const get = this.getters.get(getContainer());
+    return get?.() || error<T>("tried to resolve an unregistered injectable");
+  }
+  register(get: () => T) {
+    this.getters.set(getContainer(), get);
+  }
+}
+
+export interface InjecdContainer extends LockedInjecdContainer {
+  /**
+   * Registers a factory function
+   * @param tag Injecd tag created with `injecd()`
+   * @param factory Function which will create an instance when resolving
+   */
+  registerFactory<T>(tag: InjecdTag<T>, factory: () => T): InjecdContainer;
+
+  /**
+   * Registers a class type as factory, singleton mode
+   * @param tag Injecd tag created with `injecd()`
+   * @param factory Function which will create an instance  and retained for all resolutions
+   */
+  registerFactorySingleton<T>(
+    tag: InjecdTag<T>,
+    factory: () => T
+  ): InjecdContainer;
+
+  /**
+   * Registers a class type as factory, new instance every resolution
+   * @param tag Injecd tag created with `injecd()`
+   * @param constructor Class which will be instantiated on each resolution
+   */
+  registerClass<T>(
+    tag: InjecdTag<T>,
+    constructor: new () => T
+  ): InjecdContainer;
+
+  /**
+   * Registers a class type as factory, singleton mode
+   * @param tag Injecd tag created with `injecd()`
+   * @param constructor Class which will be instantiated once and retained for all resolutions
+   */
+  registerClassSingleton<T>(
+    tag: InjecdTag<T>,
+    constructor: new () => T
+  ): InjecdContainer;
+
+  /**
+   * Registers specific instance
+   * @param tag Injecd tag created with `injecd()`
+   * @param instance Instance that will be resolved for this tag
+   */
+  registerInstance<T>(tag: InjecdTag<T>, instance: T): InjecdContainer;
+
+  /**
+   * Creates a version of the container with `resolve` methods only
+   */
+  lock(): LockedInjecdContainer;
+}
+
+export interface LockedInjecdContainer {
+  /**
+   * Resolves the entity registered for given injecd tag\
+   * Includes all injecd tagged dependencies
+   * @param tag Injecd tag created with `injecd()`
+   */
+  resolve<T>(tag: InjecdTag<T>): T;
+
+  /**
+   * Resolves the entity from a factory function containing injecd tags\
+   * Includes all injecd tagged dependencies of references injecd tags
+   * @param injecd Injecd tag created with `injecd()`
+   */
+  resolveFactory<T>(factory: () => T): T;
+}
+
 export interface InjecdTag<T> {
   /**
    * Resolution point for this injecd tag.\
@@ -98,34 +149,10 @@ export interface InjecdTag<T> {
   r: T;
 }
 
-class Tag<T> implements InjecdTag<T> {
-  get r() {
-    return this.internals.resolveHard();
-  }
-  internals = new Internals<T>();
-}
-
-class Internals<T> {
-  private getters = new Map<InjecdContainer, () => T>();
-  register(get: () => T) {
-    this.getters.set(getContainer(), get);
-  }
-  resolveSoft(): T | undefined {
-    const get = this.getters.get(getContainer());
-    return get?.();
-  }
-  resolveHard(): T {
-    return (
-      this.resolveSoft() || error("tried to resolve an unregistered injectable")
-    );
-  }
-}
-
 /**
  *  Create a new IoC container
- *  @returns new IoC container
  */
-export const spawnContainer = () => new InjecdContainer();
+export const spawnContainer = () => new Container() as InjecdContainer;
 
 /**
  * Create a new injecd tag for a container to register and resolve entitity or factory.\
