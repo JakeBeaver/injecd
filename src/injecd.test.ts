@@ -1,11 +1,18 @@
-import { injecd, injecdReturn, spawnContainer } from ".";
+import {
+  injecd,
+  InjecdContainer,
+  injecdReturn,
+  InjecdTag,
+  LockedInjecdContainer,
+  spawnContainer,
+} from ".";
 import { it, expect, describe, beforeEach } from "vitest";
 
 it.fails(".r throws outside container", () => injecd<string>().r);
 
 it("basic resolve", () => {
-  const stringT = injecd<string>();
-  const container = spawnContainer();
+  const stringT: InjecdTag<string> = injecd<string>();
+  const container: InjecdContainer = spawnContainer();
 
   container.registerInstance(stringT, "testing");
   const resolved = container.resolve(stringT);
@@ -127,7 +134,7 @@ describe("nested resolve", () => {
   });
   it("locks", () => {
     container.registerInstance(nestedT, "test");
-    const locked = container.lock();
+    const locked: LockedInjecdContainer = container.lock();
     expect(locked.resolve(nestedT)).toBe("test");
   });
 });

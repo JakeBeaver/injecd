@@ -78,7 +78,7 @@ const weird$ = injecdReturn(weirdFactory);
 
 ### functions
 
-Let's say you want to be able to mock randomness in your function for coin throw bets
+Let's say you want to be able to mock randomness in your function for coin toss bets
 
 ```ts
 // random.ts
