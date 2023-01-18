@@ -14,16 +14,20 @@ class InjecdContainer {
    * @param factory Function which will create an instance when resolving
    */
   registerFactory<T>(tag: InjecdTag<T>, factory: () => T) {
-    this.scope(() => tag.internals.register(factory));
+    this.scope(() => (tag as Tag<T>).internals.register(factory));
   }
 
   /**
-   * Registers specific instance
+   * Registers a class type as factory, singleton mode
    * @param tag Injecd tag created with `injecd()`
-   * @param instance Instance that will be resolved for this tag
+   * @param factory Function which will create an instance  and retained for all resolutions
    */
-  registerInstance<T>(tag: InjecdTag<T>, instance: T) {
-    this.registerFactory(tag, () => instance);
+  registerFactorySingleton<T>(tag: InjecdTag<T>, factory: () => T) {
+    let i: T | undefined;
+    this.registerFactory(tag, () => {
+      if (!i) i = factory();
+      return i;
+    });
   }
 
   /**
@@ -49,12 +53,21 @@ class InjecdContainer {
   }
 
   /**
+   * Registers specific instance
+   * @param tag Injecd tag created with `injecd()`
+   * @param instance Instance that will be resolved for this tag
+   */
+  registerInstance<T>(tag: InjecdTag<T>, instance: T) {
+    this.registerFactory(tag, () => instance);
+  }
+
+  /**
    * Resolves the entity registered for given injecd tag\
    * Includes all injecd tagged dependencies
    * @param tag Injecd tag created with `injecd()`
    */
   resolve<T>(tag: InjecdTag<T>) {
-    return this.scope(() => tag.internals.resolveHard());
+    return this.scope(() => (tag as Tag<T>).internals.resolveHard());
   }
 
   /**
@@ -77,58 +90,18 @@ class InjecdContainer {
   }
 }
 
-class InjecdTag<T> {
+export interface InjecdTag<T> {
   /**
    * Resolution point for this injecd tag.\
    * Throws error if no entity registered for this tag in the container
-   * @property r
-   * @property required
    */
-  get required() {
-    return this.r;
-  }
-  /**
-   * Resolution point for this injecd tag.\
-   * Throws error if no entity registered for this tag in the container
-   * @property r
-   * @property required
-   */
+  r: T;
+}
+
+class Tag<T> implements InjecdTag<T> {
   get r() {
     return this.internals.resolveHard();
   }
-
-  /**
-   * Resolution point for this injecd tag.\
-   * Resolves `undefined` if no entity registered for this tag in the container
-   * @property o
-   * @property optional
-   */
-  get optional() {
-    return this.o;
-  }
-
-  /**
-   * Resolution point for this injecd tag.\
-   * Resolves to `undefined` if no entity registered for this tag in the container
-   * @property o
-   * @property optional
-   */
-  get o() {
-    return this.internals.resolveSoft();
-  }
-
-  /**
-   * Resolution point for this injecd tag.\
-   * Resolves to defaultValue if no entity registered in the container
-   * @param defaultValue Entity that will be passed here if no entity registered for this tag in the container
-   */
-  or(defaultValue: T): T {
-    return this.internals.resolveSoft() || defaultValue;
-  }
-
-  /**
-   * NO TOUCHY! >:-[
-   */
   internals = new Internals<T>();
 }
 
@@ -164,7 +137,7 @@ export const spawnContainer = () => new InjecdContainer();
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const injecd = <T>(_dummy?: T) => {
-  return new InjecdTag<T>();
+  return new Tag<T>() as InjecdTag<T>;
 };
 
 /**
@@ -176,5 +149,5 @@ export const injecd = <T>(_dummy?: T) => {
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const injecdReturn = <T extends () => unknown>(_dummyFactory?: T) => {
-  return new InjecdTag<ReturnType<T>>();
+  return new Tag<ReturnType<T>>() as InjecdTag<ReturnType<T>>;
 };

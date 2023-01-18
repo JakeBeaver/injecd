@@ -29,7 +29,7 @@ const class$ = injecd<A>();
 
 ```ts
 class A {
-    constructor(public greeting = greeting$.r) {}
+  constructor(public greeting = greeting$.r) {}
 }
 ```
 
@@ -66,8 +66,8 @@ const weird$ = injecd(weird):
 Instead of `injecd<ReturnType<typeof weirdFactory>>()`:
 
 ```ts
-function weirdFactory(){
-    return { weird: "untyped", inferred: "object" };
+function weirdFactory() {
+  return { weird: "untyped", inferred: "object" };
 }
 const weird$ = injecdReturn(weirdFactory);
 ```

@@ -2,8 +2,6 @@ import { injecd, injecdReturn, spawnContainer } from ".";
 import { it, expect, describe, beforeEach } from "vitest";
 
 it.fails(".r throws outside container", () => injecd<string>().r);
-it.fails(".option throws outside container", () => injecd<string>().optional);
-it.fails(".or() throws outside container", () => injecd<string>().or("test"));
 
 it("basic resolve", () => {
   const stringT = injecd<string>();
@@ -34,28 +32,8 @@ describe("nested resolve", () => {
     expect(factory()).toBe("a");
   });
 
-  it(".or() without injection gives default value", () => {
-    container.registerFactory(parentT, (a = nestedT.or("b")) => {
-      return () => a;
-    });
-
-    const factory = container.resolve(parentT);
-
-    expect(factory()).toBe("b");
-  });
-
-  it(".option without injection gives default value", () => {
-    container.registerFactory(parentT, (a = nestedT.optional) => {
-      return () => a;
-    });
-
-    const factory = container.resolve(parentT);
-
-    expect(factory()).toBeUndefined();
-  });
-
   it.fails(".r without injection throws", () => {
-    container.registerFactory(parentT, (a = nestedT.required) => {
+    container.registerFactory(parentT, (a = nestedT.r) => {
       return () => a;
     });
 
@@ -109,7 +87,7 @@ describe("nested resolve", () => {
 
     expect(r()).not.toBe(r());
   });
-  it("resolve the same singleton", () => {
+  it("resolve the same singleton class", () => {
     class A {}
     const tag = injecd<A>();
     container.registerClassSingleton(tag, A);
@@ -130,6 +108,22 @@ describe("nested resolve", () => {
     const resolved = container.resolve(tag);
 
     expect(resolved.n).toBe(1);
+  });
+  it("resolve the same instance from singleton factory", () => {
+    const A = () => ({});
+    const tag = injecdReturn(A);
+    container.registerFactorySingleton(tag, A);
+    const r = () => container.resolve(tag);
+
+    expect(r()).toBe(r());
+  });
+  it("resolve different instance from factory", () => {
+    const A = () => ({});
+    const tag = injecdReturn(A);
+    container.registerFactory(tag, A);
+    const r = () => container.resolve(tag);
+
+    expect(r()).not.toBe(r());
   });
 });
 
