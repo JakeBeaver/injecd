@@ -14,7 +14,7 @@ npm install injecd
 
 ## importing
 
-```
+```ts
 import { injecd, spawnContainer } from "injecd";
 ```
 
@@ -22,35 +22,35 @@ import { injecd, spawnContainer } from "injecd";
 
 ### 1. Tag
 
-```
+```ts
 const greeting$ = injecd<string>();
 const class$ = injecd<A>();
 ```
 
 ### 2. Mark
 
-```
+```ts
 class A {
-    constructor(public greeting = greeting$.r) {}
+  constructor(public greeting = greeting$.r) {}
 }
 ```
 
 ### 3. Spawn
 
-```
+```ts
 const container = spawnContainer();
 ```
 
 ### 4. Register
 
-```
+```ts
 container.registerInstance(greeting$, "Hello World!");
 container.registerClass(class$, A);
 ```
 
 ### 5. Resolve!
 
-```
+```ts
 const instance = container.resolve(class$);
 
 console.log(instance.greeting); // > Hello World!
@@ -60,14 +60,14 @@ console.log(instance.greeting); // > Hello World!
 
 Instead of `injecd<typeof weird>()`:
 
-```
+```ts
 const weird = { weird: "untyped", inferred: "object" };
 const weird$ = injecd(weird):
 ```
 
 Instead of `injecd<ReturnType<typeof weirdFactory>>()`:
 
-```
+```ts
 function weirdFactory(){
     return { weird: "untyped", inferred: "object" };
 }
@@ -80,7 +80,7 @@ const weird$ = injecdReturn(weirdFactory);
 
 Let's say you want to be able to mock randomness in your function for coin throw bets
 
-```
+```ts
 // random.ts
 export function getRealRandom() {
     return Math.Random();
@@ -90,7 +90,7 @@ export function getRealRandom() {
 const rng$ = injecd(getRealRandom);
 ```
 
-```
+```ts
 // bets.ts
 function checkGuessFactory(getRandom = rng$.r){
     return function checkGuess(guess: number){
@@ -99,7 +99,7 @@ function checkGuessFactory(getRandom = rng$.r){
 }
 ```
 
-```
+```ts
 // main.ts
 const container = spawnContainer();
 container.registerInstance(rng$, getRealRandom)
@@ -107,7 +107,7 @@ container.registerInstance(rng$, getRealRandom)
 const checkGuess = containre.resolveFactory(checkGuessFactory)
 ```
 
-```
+```ts
 // main.test.ts
 const mockGetRandom = () => .1;
 const checkGuess = checkGuessFactory(mockGetRandom);
@@ -120,7 +120,7 @@ Let's say you have a singleton service and want to inject it into some class
 
 Create a tag for the type:
 
-```
+```ts
 // SomeService.ts
 import { injecd } from 'injecd';
 
@@ -138,7 +138,7 @@ export const singletonService = new SomeService();
 
 Import the tag and use the 'r' property as the default value
 
-```
+```ts
 // SomeClass.ts
 import { SomeService$ } from './SomeService';
 
@@ -153,7 +153,7 @@ export class SomeClass {
 
 create container
 
-```
+```ts
 // main.ts
 import { spawnContainer } from 'injecd';
 import { SomeService$, singletonService } from './SomeService';
@@ -175,7 +175,7 @@ container.resolveFactory(() => new SomeClass());
 
 ### alternatively the tag can be part of the class, like so:
 
-```
+```ts
     class Child {
       static tag = injecd<Child>();
       constructor(public id: number) {}

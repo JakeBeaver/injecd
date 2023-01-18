@@ -12,7 +12,7 @@ npm install injecd
 
 ## importing
 
-```
+```ts
 import { injecd, spawnContainer } from "injecd";
 ```
 
@@ -20,14 +20,14 @@ import { injecd, spawnContainer } from "injecd";
 
 ### 1. Tag
 
-```
+```ts
 const greeting$ = injecd<string>();
 const class$ = injecd<A>();
 ```
 
 ### 2. Mark
 
-```
+```ts
 class A {
     constructor(public greeting = greeting$.r) {}
 }
@@ -35,20 +35,20 @@ class A {
 
 ### 3. Spawn
 
-```
+```ts
 const container = spawnContainer();
 ```
 
 ### 4. Register
 
-```
+```ts
 container.registerInstance(greeting$, "Hello World!");
 container.registerClass(class$, A);
 ```
 
 ### 5. Resolve!
 
-```
+```ts
 const instance = container.resolve(class$);
 
 console.log(instance.greeting); // > Hello World!
@@ -58,14 +58,14 @@ console.log(instance.greeting); // > Hello World!
 
 Instead of `injecd<typeof weird>()`:
 
-```
+```ts
 const weird = { weird: "untyped", inferred: "object" };
 const weird$ = injecd(weird):
 ```
 
 Instead of `injecd<ReturnType<typeof weirdFactory>>()`:
 
-```
+```ts
 function weirdFactory(){
     return { weird: "untyped", inferred: "object" };
 }
