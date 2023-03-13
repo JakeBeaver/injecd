@@ -76,7 +76,25 @@ const weird$ = injecdReturn(weirdFactory);
 
 # In-depth usage examples
 
-### functions
+## Object Lifetime
+```ts
+// new instance every time
+container.registerFactory($date, () => new Date());
+
+// lazy singleton
+container.registerFactorySingleton($date, () => new Date());
+
+// eager singleton
+container.registerInstance($date, new Date())
+
+// class based new instance every time
+container.registerClass($date, Date);
+
+// class based new instance every time
+container.registerClassSingleton($date, Date);
+```
+
+## functions
 
 Let's say you want to be able to mock randomness in your function for coin toss bets
 
@@ -114,7 +132,7 @@ const checkGuess = checkGuessFactory(mockGetRandom);
 expect(checkGuess(4)).toBeFalse();
 ```
 
-### classes
+## classes
 
 Let's say you have a singleton service and want to inject it into some class
 
