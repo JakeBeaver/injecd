@@ -15,7 +15,7 @@ npm install injecd
 ## importing
 
 ```ts
-import { injecd, spawnContainer } from "injecd";
+import { injecd, InjecdContainer } from "injecd";
 ```
 
 # Usage
@@ -38,7 +38,7 @@ class A {
 ### 3. Spawn
 
 ```ts
-const container = spawnContainer();
+const container = new InjecdContainer();
 ```
 
 ### 4. Register
@@ -79,10 +79,10 @@ const weird$ = injecdReturn(weirdFactory);
 ## Object Lifetime
 ```ts
 // new instance every time
-container.registerFactory($date, () => new Date());
+container.register($date, () => new Date());
 
 // lazy singleton
-container.registerFactorySingleton($date, () => new Date());
+container.registerSingleton($date, () => new Date());
 
 // eager singleton
 container.registerInstance($date, new Date())
@@ -93,6 +93,16 @@ container.registerClass($date, Date);
 // class based new instance every time
 container.registerClassSingleton($date, Date);
 ```
+
+## Static Continer
+If you only need one instance of the container, or don't want to keep invoking `container.resolve()`, you can leverage the static container:
+
+```ts
+import { InjecdContainer } from "injedc";
+const container = InjecdContainer.static;
+```
+
+Whatever is registered in this container will resolve in the place of `tag.r` when not using a specified container. This means you don't need not worry about passing the container around, while the tags will resolve to this container by default.
 
 ## functions
 
