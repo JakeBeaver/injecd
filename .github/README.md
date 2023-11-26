@@ -77,6 +77,7 @@ const weird$ = injecdReturn(weirdFactory);
 # In-depth usage examples
 
 ## Object Lifetime
+
 ```ts
 // new instance every time
 container.register($date, () => new Date());
@@ -85,7 +86,7 @@ container.register($date, () => new Date());
 container.registerSingleton($date, () => new Date());
 
 // eager singleton
-container.registerInstance($date, new Date())
+container.registerInstance($date, new Date());
 
 // class based new instance every time
 container.registerClass($date, Date);
@@ -95,6 +96,7 @@ container.registerClassSingleton($date, Date);
 ```
 
 ## Static Continer
+
 If you only need one instance of the container, or don't want to keep invoking `container.resolve()`, you can leverage the static container:
 
 ```ts

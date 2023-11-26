@@ -21,7 +21,7 @@ export const injecdReturn = <T extends () => unknown>(_dummyFactory?: T) => {
 export class InjecdContainer {
   private static _staticContainer: InjecdContainer;
   static get static(): InjecdContainer {
-    if (!this._staticContainer){
+    if (!this._staticContainer) {
       this._staticContainer = new InjecdContainer();
       currentContainer = this._staticContainer.container;
     }

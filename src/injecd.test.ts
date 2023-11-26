@@ -1,9 +1,4 @@
-import {
-  injecd,
-  InjecdContainer,
-  injecdReturn,
-  InjecdTag,
-} from ".";
+import { injecd, InjecdContainer, injecdReturn, InjecdTag } from ".";
 import { it, expect, describe, beforeEach } from "vitest";
 
 it.fails(".r throws outside container", () => injecd<string>().r);
