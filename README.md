@@ -13,7 +13,7 @@ npm install injecd
 ## importing
 
 ```ts
-import { injecd, spawnContainer } from "injecd";
+import { injecd, InjecdContainer } from "injecd";
 ```
 
 # Usage
@@ -36,7 +36,7 @@ class A {
 ### 3. Spawn
 
 ```ts
-const container = spawnContainer();
+const container = new InjecdContainer();
 ```
 
 ### 4. Register
