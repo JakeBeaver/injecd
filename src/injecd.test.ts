@@ -3,50 +3,60 @@ import {
   InjecdContainer,
   injecdReturn,
   InjecdTag,
-  LockedInjecdContainer,
-  spawnContainer,
 } from ".";
 import { it, expect, describe, beforeEach } from "vitest";
 
 it.fails(".r throws outside container", () => injecd<string>().r);
 
-it("basic resolve", () => {
-  const stringT: InjecdTag<string> = injecd<string>();
-  const container: InjecdContainer = spawnContainer();
+it("doesnt fail with a static container", () => {
+  const tag = injecd<string>();
+  InjecdContainer.static.registerInstance(tag, "test");
+  expect(tag.r).toBe("test");
+});
 
-  container.registerInstance(stringT, "testing");
-  const resolved = container.resolve(stringT);
+it("basic resolve", () => {
+  const value: InjecdTag<string> = injecd<string>();
+  const container: InjecdContainer = new InjecdContainer();
+
+  container.registerInstance(value, "testing");
+  const resolved = container.resolve(value);
 
   expect(resolved).toBe("testing");
 });
 
 describe("nested resolve", () => {
   type factoryType = () => string;
-  const parentT = injecd<factoryType>();
-  const nestedT = injecdReturn<factoryType>();
-  let container: ReturnType<typeof spawnContainer>;
+  const getValue = injecd<factoryType>();
+  const value = injecdReturn<factoryType>();
+  let container: InjecdContainer;
   beforeEach(() => {
-    container = spawnContainer();
+    container = new InjecdContainer();
   });
   it("nested resolve", () => {
-    container.registerInstance(nestedT, "a");
-    container.registerFactory(parentT, (a = nestedT.r) => {
+    container.registerInstance(value, "a");
+    container.register(getValue, (a = value.r) => {
       return () => a;
     });
 
-    const factory = container.resolve(parentT);
+    const factory = container.resolve(getValue);
 
     expect(factory()).toBe("a");
   });
 
   it.fails(".r without injection throws", () => {
-    container.registerFactory(parentT, (a = nestedT.r) => {
+    container.register(getValue, (a = value.r) => {
       return () => a;
     });
 
-    container.resolve(parentT);
+    container.resolve(getValue);
   });
+});
 
+describe("class resolve", () => {
+  let container: InjecdContainer;
+  beforeEach(() => {
+    container = new InjecdContainer();
+  });
   it("class type works", () => {
     class Child {
       static tag = injecd<Child>();
@@ -119,7 +129,7 @@ describe("nested resolve", () => {
   it("resolve the same instance from singleton factory", () => {
     const A = () => ({});
     const tag = injecdReturn(A);
-    container.registerFactorySingleton(tag, A);
+    container.registerSingleton(tag, A);
     const r = () => container.resolve(tag);
 
     expect(r()).toBe(r());
@@ -127,23 +137,18 @@ describe("nested resolve", () => {
   it("resolve different instance from factory", () => {
     const A = () => ({});
     const tag = injecdReturn(A);
-    container.registerFactory(tag, A);
+    container.register(tag, A);
     const r = () => container.resolve(tag);
 
     expect(r()).not.toBe(r());
-  });
-  it("locks", () => {
-    container.registerInstance(nestedT, "test");
-    const locked: LockedInjecdContainer = container.lock();
-    expect(locked.resolve(nestedT)).toBe("test");
   });
 });
 
 it("multiple containers", () => {
   const tag = injecd<number>();
-  const container1 = spawnContainer();
-  const container2 = spawnContainer();
-  const container3 = spawnContainer();
+  const container1 = new InjecdContainer();
+  const container2 = new InjecdContainer();
+  const container3 = new InjecdContainer();
 
   container1.registerInstance(tag, 1);
   container2.registerInstance(tag, 2);
