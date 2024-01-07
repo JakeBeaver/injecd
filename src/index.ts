@@ -1,31 +1,32 @@
-let currentContainer: Map<any, any> | null = null;
+let current: Map<InjecdTag<any>, () => any> | null = null;
 
 export class InjecdTag<T> {
   get r(): T {
-    if (!currentContainer)
-      throw new Error("Trying to resolve outside injecd container scope");
-    if (!currentContainer.has(this))
-      throw new Error("Injecd tag not registered");
-    return currentContainer.get(this)() as T;
+    if (!current) throw new Error("Cannot resolve outside container scope");
+    const get = current.get(this);
+    if (!get) throw new Error("Injecd tag not registered");
+    return get() as T;
   }
 }
 
 export const injecd = <T>(_dummy?: T) => {
-  return new InjecdTag<T>() as InjecdTag<T>;
+  return new InjecdTag<T>();
 };
 
 export const injecdReturn = <T extends () => unknown>(_dummyFactory?: T) => {
-  return new InjecdTag<ReturnType<T>>() as InjecdTag<ReturnType<T>>;
+  return new InjecdTag<ReturnType<T>>();
 };
 
+const noValueYet = Symbol();
+
 export class InjecdContainer {
-  private static _staticContainer: InjecdContainer;
+  private static singleton: InjecdContainer;
   static get static(): InjecdContainer {
-    if (!this._staticContainer) {
-      this._staticContainer = new InjecdContainer();
-      currentContainer = this._staticContainer.container;
+    if (!this.singleton) {
+      this.singleton = new InjecdContainer();
+      current = this.singleton.container;
     }
-    return this._staticContainer;
+    return this.singleton;
   }
   private container = new Map();
 
@@ -34,9 +35,9 @@ export class InjecdContainer {
     return this;
   }
   registerSingleton<T>(tag: InjecdTag<T>, factory: () => T) {
-    let i: T | undefined;
+    let i: T | typeof noValueYet = noValueYet;
     return this.register(tag, () => {
-      if (!i) i = factory();
+      if (i === noValueYet) i = factory();
       return i;
     });
   }
@@ -52,10 +53,10 @@ export class InjecdContainer {
 
   resolveFactory<T>(factory: () => T) {
     try {
-      currentContainer = this.container;
+      current = this.container;
       return factory();
     } finally {
-      currentContainer = InjecdContainer._staticContainer.container;
+      current = InjecdContainer.singleton.container;
     }
   }
   resolve<T>(tag: InjecdTag<T>) {
